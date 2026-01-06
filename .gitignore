@@ -3,8 +3,6 @@
 .gitignore
 
 # Documentation
-*.md
-README.md
 
 # Environment files
 .env
@@ -13,14 +11,6 @@ README.md
 # Dependencies (will be installed in container)
 vendor/
 
-# Kubernetes files
-kubernetes/
-
-# Scripts
-scripts/
-
-# Evidence folder
-evidence/
 
 # IDE files
 .vscode/
