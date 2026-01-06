@@ -1,44 +1,61 @@
 package config
 
 import (
-	"github.com/spf13/viper"
+        "os"
+        "strconv"
 )
 
-// Config stores all configuration of the application.
 type Config struct {
-	ServerPort       string `mapstructure:"PORT"`
-	MongoURI         string `mapstructure:"MONGO_URI"`
-	DBName           string `mapstructure:"DB_NAME"`
-	JWTSecretKey     string `mapstructure:"JWT_SECRET_KEY"`
-	JWTExpirationHours int    `mapstructure:"JWT_EXPIRATION_HOURS"`
-	EnableCache      bool   `mapstructure:"ENABLE_CACHE"`
-	RedisAddr        string `mapstructure:"REDIS_ADDR"`
-	RedisPassword    string `mapstructure:"REDIS_PASSWORD"`
-	LogLevel      string `mapstructure:"LOG_LEVEL"`
-	LogFormat     string `mapstructure:"LOG_FORMAT"`
+        ServerPort         string
+        MongoURI           string
+        DBName             string
+        JWTSecretKey       string
+        JWTExpirationHours int
+        EnableCache        bool
+        RedisAddr          string
+        RedisPassword      string
+        LogLevel           string
+        LogFormat          string
 }
 
-// LoadConfig reads configuration from file or environment variables.
-func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	// Set default values
-	viper.SetDefault("PORT", "8080")
-	viper.SetDefault("ENABLE_CACHE", false)
-	viper.SetDefault("JWT_EXPIRATION_HOURS", 72)
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return
-		}
-	}
-
-	err = viper.Unmarshal(&config)
-	return
+func LoadConfig(path string) (Config, error) {
+        config := Config{
+                ServerPort:         getEnv("PORT", "8080"),
+                MongoURI:           getEnv("MONGO_URI", ""),
+                DBName:             getEnv("DB_NAME", "muchtodo"),
+                JWTSecretKey:       getEnv("JWT_SECRET_KEY", "default-secret-key"),
+                JWTExpirationHours: getEnvAsInt("JWT_EXPIRATION_HOURS", 72),
+                EnableCache:        getEnvAsBool("ENABLE_CACHE", false),
+                RedisAddr:          getEnv("REDIS_ADDR", ""),
+                RedisPassword:      getEnv("REDIS_PASSWORD", ""),
+                LogLevel:           getEnv("LOG_LEVEL", "info"),
+                LogFormat:          getEnv("LOG_FORMAT", "json"),
+        }
+        return config, nil
 }
 
+func getEnv(key, defaultValue string) string {
+        if value := os.Getenv(key); value != "" {
+                return value
+        }
+        return defaultValue
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+        valueStr := getEnv(key, "")
+        if value, err := strconv.Atoi(valueStr); err == nil {
+                return value
+        }
+        return defaultValue
+}
+
+func getEnvAsBool(key string, defaultValue bool) bool {
+        valueStr := getEnv(key, "")
+        if valueStr == "true" || valueStr == "1" {
+                return true
+        }
+        if valueStr == "false" || valueStr == "0" {
+                return false
+        }
+        return defaultValue
+}

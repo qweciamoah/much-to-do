@@ -1,4 +1,4 @@
-{
+o    {
     "swagger": "2.0",
     "info": {
         "description": "This is an API for MuchToDo application with user authentication.",
